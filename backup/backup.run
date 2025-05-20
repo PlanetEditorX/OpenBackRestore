@@ -15,7 +15,15 @@ backup() {
     cp /etc/opkg/distfeeds.conf distfeeds.conf
     # 备份已安装软件列表
     opkg list-installed > packages-list.txt
-    tar -czvf overlay_backup.tar.gz /overlay
+    local overlay_path=$(df -h | awk '/overlayfs/{print $NF}' | head -1)
+
+    #  {^~ `^` ` k常 a路 d
+    [ -z "$overlay_path" ] && [ -d "/rom/overlay" ] && overlay_path="/rom/overlay"
+    [ -z "$overlay_path" ] && [ -d "/overlay" ] && overlay_path="/overlay"
+
+    echo "${overlay_path:-/overlay}"
+
+    tar -czvf overlay_backup.tar.gz $overlay_path
     # 将所有备份打包成一个文件
     tar -czvf backup.tar.gz distfeeds.conf packages-list.txt overlay_backup.tar.gz
     # 清理临时文件
